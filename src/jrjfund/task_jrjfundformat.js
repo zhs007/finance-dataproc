@@ -59,6 +59,10 @@ class TaskJRJFundFormat extends Task {
                         unit_net = last_unit_net;
                     }
 
+                    if (accum_net == 0 && unit_net > 0) {
+                        accum_net = unit_net;
+                    }
+
                     lst.push({
                         code: code,
                         timed: ct,

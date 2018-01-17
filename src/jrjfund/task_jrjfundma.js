@@ -89,10 +89,10 @@ class TaskJRJFundMA extends Task {
         }
     }
 
-    async procFormat(ti, code, st, bt, et) {
+    async procFormat(ti, code, mst, mbt, met) {
         let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
 
-        let str = util.format("select * from jrjfundformat_%d where code = '%s' and timed >= '%s' and timed <= '%s' order by timed asc;", ti, code, st, et);
+        let str = util.format("select * from jrjfundformat_%d where code = '%s' and timed >= '%s' and timed <= '%s' order by timed asc;", ti, code, mst, met);
         let [rows, fields] = await conn.query(str);
         if (rows.length > 0) {
             let map = {};
@@ -143,10 +143,12 @@ class TaskJRJFundMA extends Task {
 
             let lst1 = [];
             for (let ii = 0; ii < lst.length; ++ii) {
-                moment(lst[ii].timed).isBetween(bt, et, null, '[]');
+                if (moment(lst[ii].timed).isBetween(mbt, met, null, '[]')) {
+                    lst1.push(lst[ii]);
+                }
             }
 
-            await saveJRJFundMa(this.cfg.maindb, ti, lst);
+            await saveJRJFundMa(this.cfg.maindb, ti, lst1);
             // await this.saveJRJFundFormat(ti, lst);
         }
     }
