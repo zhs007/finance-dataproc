@@ -4,16 +4,14 @@ const util = require('util');
 const moment = require('moment');
 const { Task, log } = require('jarvis-task');
 const { taskFactory } = require('../taskfactory');
-const { TASK_NAMEID_JRJFUND_FORMAT_INIT } = require('../taskdef');
+const { TASK_NAMEID_JRJFUND_FORMAT } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
 const { saveJRJFundFormat } = require('./jrjfundformat');
 
-// const SQL_BATCH_NUMS = 2048;
-
-class TaskJRJFundFormat_Init extends Task {
+class TaskJRJFundFormat extends Task {
     constructor(taskfactory, cfg) {
-        super(taskfactory, TASK_NAMEID_JRJFUND_FORMAT_INIT, cfg);
+        super(taskfactory, TASK_NAMEID_JRJFUND_FORMAT, cfg);
     }
 
     async loadJRJCodeList(ti) {
@@ -24,62 +22,10 @@ class TaskJRJFundFormat_Init extends Task {
         return rows;
     }
 
-    // async saveJRJFundFormat(ti, lst) {
-    //     let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
-    //
-    //     let fullsql = '';
-    //     let sqlnums = 0;
-    //     for (let ii = 0; ii < lst.length; ++ii) {
-    //         let cf = lst[ii];
-    //         let str0 = '';
-    //         let str1 = '';
-    //
-    //         let i = 0;
-    //         for (let key in cf) {
-    //             if (i != 0) {
-    //                 str0 += ', ';
-    //                 str1 += ', ';
-    //             }
-    //
-    //             str0 += '`' + key + '`';
-    //             str1 += "'" + cf[key] + "'";
-    //
-    //             ++i;
-    //         }
-    //
-    //         let sql = util.format("insert into jrjfundformat_%d(%s) values(%s);", ti, str0, str1);
-    //         fullsql += sql;
-    //         ++sqlnums;
-    //
-    //         if (sqlnums >= SQL_BATCH_NUMS) {
-    //             try{
-    //                 await conn.query(fullsql);
-    //             }
-    //             catch(err) {
-    //                 log('error', 'mysql err: ' + err);
-    //                 log('error', 'mysql sql: ' + fullsql);
-    //             }
-    //
-    //             fullsql = '';
-    //             sqlnums = 0;
-    //         }
-    //     }
-    //
-    //     if (sqlnums > 0) {
-    //         try{
-    //             await conn.query(fullsql);
-    //         }
-    //         catch(err) {
-    //             log('error', 'mysql err: ' + err);
-    //             log('error', 'mysql sql: ' + fullsql);
-    //         }
-    //     }
-    // }
-
-    async procFormat(ti, code) {
+    async procFormat(ti, code, bt, et) {
         let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
 
-        let str = util.format("select * from jrjfundnet_%d where fundcode = '%s' order by enddate asc;", ti, code);
+        let str = util.format("select * from jrjfundnet_%d where fundcode = '%s' and enddate >= '%s' and enddate <= '%s' order by enddate asc;", ti, code, bt, et);
         let [rows, fields] = await conn.query(str);
         if (rows.length > 0) {
             let map = {};
@@ -140,11 +86,14 @@ class TaskJRJFundFormat_Init extends Task {
 
             await FinanceMgr.singleton.loadDayOff();
 
+            let et = moment().format('YYYY-MM-DD');
+            let bt = FinanceMgr.singleton.subDays_DayOff(et, this.cfg.daynums);
+
             for (let ii = 0; ii < 10; ++ii) {
-                await FinanceMgr.singleton.createFundFormat('jrjfundformat_' + ii);
+                // await FinanceMgr.singleton.createFundFormat('jrjfundformat_' + ii);
                 let lst = await this.loadJRJCodeList(ii);
                 for (let jj = 0; jj < lst.length; ++jj) {
-                    await this.procFormat(ii, lst[jj].fundcode);
+                    await this.procFormat(ii, lst[jj].fundcode, bt, et);
                 }
             }
 
@@ -153,8 +102,8 @@ class TaskJRJFundFormat_Init extends Task {
     }
 };
 
-taskFactory.regTask(TASK_NAMEID_JRJFUND_FORMAT_INIT, (taskfactory, cfg) => {
-    return new TaskJRJFundFormat_Init(taskfactory, cfg);
+taskFactory.regTask(TASK_NAMEID_JRJFUND_FORMAT, (taskfactory, cfg) => {
+    return new TaskJRJFundFormat(taskfactory, cfg);
 });
 
-exports.TaskJRJFundFormat_Init = TaskJRJFundFormat_Init;
+exports.TaskJRJFundFormat = TaskJRJFundFormat;

@@ -42,6 +42,20 @@ class FinanceMgr {
         return this.mapDayOff.hasOwnProperty(curday);
     }
 
+    subDays_DayOff(curday, days) {
+        let mt = moment(curday);
+
+        while (days >= 0) {
+            if (!this.isDayOff(mt)) {
+                --days;
+            }
+
+            mt = mt.subtract(1, 'days');
+        }
+
+        return mt.format('YYYY-MM-DD');
+    }
+
     addDayOff(curday) {
         let cd = moment(curday).format('d');
         // 周末跳过

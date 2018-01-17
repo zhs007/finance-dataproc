@@ -4,22 +4,22 @@ const util = require('util');
 const moment = require('moment');
 const { Task, log } = require('jarvis-task');
 const { taskFactory } = require('../taskfactory');
-const { TASK_NAMEID_JRJFUND_FORMAT_INIT } = require('../taskdef');
+const { TASK_NAMEID_JRJFUND_MA } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
-const { saveJRJFundFormat } = require('./jrjfundformat');
+const { saveJRJFundMa } = require('./jrjfundma');
 
-// const SQL_BATCH_NUMS = 2048;
+// const SQL_BATCH_NUMS = 1024;
 
-class TaskJRJFundFormat_Init extends Task {
+class TaskJRJFundMA extends Task {
     constructor(taskfactory, cfg) {
-        super(taskfactory, TASK_NAMEID_JRJFUND_FORMAT_INIT, cfg);
+        super(taskfactory, TASK_NAMEID_JRJFUND_MA, cfg);
     }
 
     async loadJRJCodeList(ti) {
         let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
 
-        let str = util.format("select distinct(fundcode) from jrjfundnet_%d;", ti);
+        let str = util.format("select distinct(code) from jrjfundformat_%d;", ti);
         let [rows, fields] = await conn.query(str);
         return rows;
     }
@@ -36,18 +36,20 @@ class TaskJRJFundFormat_Init extends Task {
     //
     //         let i = 0;
     //         for (let key in cf) {
-    //             if (i != 0) {
-    //                 str0 += ', ';
-    //                 str1 += ', ';
+    //             if (key != 'accum_net' && key != 'unit_net') {
+    //                 if (i != 0) {
+    //                     str0 += ', ';
+    //                     str1 += ', ';
+    //                 }
+    //
+    //                 str0 += '`' + key + '`';
+    //                 str1 += "'" + cf[key] + "'";
+    //
+    //                 ++i;
     //             }
-    //
-    //             str0 += '`' + key + '`';
-    //             str1 += "'" + cf[key] + "'";
-    //
-    //             ++i;
     //         }
     //
-    //         let sql = util.format("insert into jrjfundformat_%d(%s) values(%s);", ti, str0, str1);
+    //         let sql = util.format("insert into jrjfundma_%d(%s) values(%s);", ti, str0, str1);
     //         fullsql += sql;
     //         ++sqlnums;
     //
@@ -76,17 +78,28 @@ class TaskJRJFundFormat_Init extends Task {
     //     }
     // }
 
-    async procFormat(ti, code) {
+    procMA(lst, mai) {
+        for (let ii = mai - 1; ii < lst.length; ++ii) {
+            let ta = 0;
+            for (let jj = 0; jj < mai; ++jj) {
+                ta += lst[ii - jj].accum_net;
+            }
+
+            lst[ii]['ma' + mai] = Math.floor(ta / mai);
+        }
+    }
+
+    async procFormat(ti, code, st, bt, et) {
         let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
 
-        let str = util.format("select * from jrjfundnet_%d where fundcode = '%s' order by enddate asc;", ti, code);
+        let str = util.format("select * from jrjfundformat_%d where code = '%s' and timed >= '%s' and timed <= '%s' order by timed asc;", ti, code, st, et);
         let [rows, fields] = await conn.query(str);
         if (rows.length > 0) {
             let map = {};
-            let bt = moment(rows[0].enddate);
-            let et = moment(rows[rows.length - 1].enddate);
+            let bt = moment(rows[0].timed);
+            let et = moment(rows[rows.length - 1].timed);
             for (let ii = 0; ii < rows.length; ++ii) {
-                map[moment(rows[ii].enddate).format('YYYY-MM-DD')] = {
+                map[moment(rows[ii].timed).format('YYYY-MM-DD')] = {
                     accum_net: rows[ii].accum_net,
                     unit_net: rows[ii].unit_net
                 };
@@ -124,7 +137,17 @@ class TaskJRJFundFormat_Init extends Task {
                 bt.add(1, 'days')
             }
 
-            await saveJRJFundFormat(this.cfg.maindb, ti, lst);
+            for (let ii = 2; ii <= 50; ++ii) {
+                this.procMA(lst, ii);
+            }
+
+            let lst1 = [];
+            for (let ii = 0; ii < lst.length; ++ii) {
+                moment(lst[ii].timed).isBetween(bt, et, null, '[]');
+            }
+
+            await saveJRJFundMa(this.cfg.maindb, ti, lst);
+            // await this.saveJRJFundFormat(ti, lst);
         }
     }
 
@@ -140,11 +163,15 @@ class TaskJRJFundFormat_Init extends Task {
 
             await FinanceMgr.singleton.loadDayOff();
 
+            let et = moment().format('YYYY-MM-DD');
+            let bt = FinanceMgr.singleton.subDays_DayOff(et, this.cfg.daynums);
+            let st = FinanceMgr.singleton.subDays_DayOff(et, this.cfg.daynums + 60);
+
             for (let ii = 0; ii < 10; ++ii) {
-                await FinanceMgr.singleton.createFundFormat('jrjfundformat_' + ii);
+                // await FinanceMgr.singleton.createFundFactor('jrjfundma_' + ii, 'ma', 2, 50);
                 let lst = await this.loadJRJCodeList(ii);
                 for (let jj = 0; jj < lst.length; ++jj) {
-                    await this.procFormat(ii, lst[jj].fundcode);
+                    await this.procFormat(ii, lst[jj].code, st, bt, et);
                 }
             }
 
@@ -153,8 +180,8 @@ class TaskJRJFundFormat_Init extends Task {
     }
 };
 
-taskFactory.regTask(TASK_NAMEID_JRJFUND_FORMAT_INIT, (taskfactory, cfg) => {
-    return new TaskJRJFundFormat_Init(taskfactory, cfg);
+taskFactory.regTask(TASK_NAMEID_JRJFUND_MA, (taskfactory, cfg) => {
+    return new TaskJRJFundMA(taskfactory, cfg);
 });
 
-exports.TaskJRJFundFormat_Init = TaskJRJFundFormat_Init;
+exports.TaskJRJFundMA = TaskJRJFundMA;

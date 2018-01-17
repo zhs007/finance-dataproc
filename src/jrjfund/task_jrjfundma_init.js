@@ -7,87 +7,142 @@ const { taskFactory } = require('../taskfactory');
 const { TASK_NAMEID_JRJFUND_MA_INIT } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
+const { saveJRJFundMa } = require('./jrjfundma');
+
+// const SQL_BATCH_NUMS = 1024;
 
 class TaskJRJFundMA_Init extends Task {
     constructor(taskfactory, cfg) {
         super(taskfactory, TASK_NAMEID_JRJFUND_MA_INIT, cfg);
     }
 
-    findStartDayInYear(y) {
-        let sd = y + '-01-01';
-        for (let cd = moment(sd); cd.format('YYYY') == y; cd.add(1, 'days')) {
-            if (this.mapBusinessDay.hasOwnProperty(cd.format('YYYY-MM-DD'))) {
-                return cd.format('YYYY-MM-DD');
-            }
-        }
-
-        return undefined;
-    }
-
-    procCurYear(y) {
-        let sd = y + '-01-01';
-        for (let cd = moment(sd); cd.format('YYYY') == y; cd.add(1, 'days')) {
-            if (!this.mapBusinessDay.hasOwnProperty(cd.format('YYYY-MM-DD'))) {
-                FinanceMgr.singleton.addDayOff(cd.format('YYYY-MM-DD'));
-            }
-        }
-    }
-
-    procDayOff() {
-        let by = moment(this.minday, 'YYYY-MM-DD').format('YYYY');
-        for (; by <= this.cfg.endyear; ++by) {
-            let sd = this.findStartDayInYear(by);
-            if (sd != undefined) {
-                log('info', 'startday is ' + sd);
-
-                if (moment(sd).isBefore(by + '-01-06')) {
-                    this.procCurYear(by);
-                }
-            }
-        }
-    }
-
-    async loadSinaDay() {
+    async loadJRJCodeList(ti) {
         let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
 
-        for (let ii = 0; ii < 10; ++ii) {
-            let str = util.format("select distinct(timed) from sinastockprice_d_%d order by timed;", ii);
-            let [rows, fields] = await conn.query(str);
-            for (let i = 0; i < rows.length; ++i) {
-                let cd = moment(rows[i].timed).format('YYYY-MM-DD');
+        let str = util.format("select distinct(code) from jrjfundformat_%d;", ti);
+        let [rows, fields] = await conn.query(str);
+        return rows;
+    }
 
-                this.mapBusinessDay[cd] = true;
+    // async saveJRJFundFormat(ti, lst) {
+    //     let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
+    //
+    //     let fullsql = '';
+    //     let sqlnums = 0;
+    //     for (let ii = 0; ii < lst.length; ++ii) {
+    //         let cf = lst[ii];
+    //         let str0 = '';
+    //         let str1 = '';
+    //
+    //         let i = 0;
+    //         for (let key in cf) {
+    //             if (key != 'accum_net' && key != 'unit_net') {
+    //                 if (i != 0) {
+    //                     str0 += ', ';
+    //                     str1 += ', ';
+    //                 }
+    //
+    //                 str0 += '`' + key + '`';
+    //                 str1 += "'" + cf[key] + "'";
+    //
+    //                 ++i;
+    //             }
+    //         }
+    //
+    //         let sql = util.format("insert into jrjfundma_%d(%s) values(%s);", ti, str0, str1);
+    //         fullsql += sql;
+    //         ++sqlnums;
+    //
+    //         if (sqlnums >= SQL_BATCH_NUMS) {
+    //             try{
+    //                 await conn.query(fullsql);
+    //             }
+    //             catch(err) {
+    //                 log('error', 'mysql err: ' + err);
+    //                 log('error', 'mysql sql: ' + fullsql);
+    //             }
+    //
+    //             fullsql = '';
+    //             sqlnums = 0;
+    //         }
+    //     }
+    //
+    //     if (sqlnums > 0) {
+    //         try{
+    //             await conn.query(fullsql);
+    //         }
+    //         catch(err) {
+    //             log('error', 'mysql err: ' + err);
+    //             log('error', 'mysql sql: ' + fullsql);
+    //         }
+    //     }
+    // }
 
-                if (cd > this.maxday) {
-                    this.maxday = cd;
-                }
-
-                if (cd < this.minday) {
-                    this.minday = cd;
-                }
+    procMA(lst, mai) {
+        for (let ii = mai - 1; ii < lst.length; ++ii) {
+            let ta = 0;
+            for (let jj = 0; jj < mai; ++jj) {
+                ta += lst[ii - jj].accum_net;
             }
+
+            lst[ii]['ma' + mai] = Math.floor(ta / mai);
         }
     }
 
-    async loadJRJDay() {
+    async procFormat(ti, code) {
         let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
 
-        for (let ii = 0; ii < 10; ++ii) {
-            let str = util.format("select distinct(enddate) from jrjfundnet_%d order by enddate;", ii);
-            let [rows, fields] = await conn.query(str);
-            for (let i = 0; i < rows.length; ++i) {
-                let cd = moment(rows[i].enddate).format('YYYY-MM-DD');
-
-                this.mapBusinessDay[cd] = true;
-
-                if (cd > this.maxday) {
-                    this.maxday = cd;
-                }
-
-                if (cd < this.minday) {
-                    this.minday = cd;
-                }
+        let str = util.format("select * from jrjfundformat_%d where code = '%s' order by timed asc;", ti, code);
+        let [rows, fields] = await conn.query(str);
+        if (rows.length > 0) {
+            let map = {};
+            let bt = moment(rows[0].timed);
+            let et = moment(rows[rows.length - 1].timed);
+            for (let ii = 0; ii < rows.length; ++ii) {
+                map[moment(rows[ii].timed).format('YYYY-MM-DD')] = {
+                    accum_net: rows[ii].accum_net,
+                    unit_net: rows[ii].unit_net
+                };
             }
+
+            let lst = [];
+            let last_accum_net = 0;
+            let last_unit_net = 0;
+            while (parseInt(bt.format('YYYYMMDD')) <= parseInt(et.format('YYYYMMDD'))) {
+                let ct = bt.format('YYYY-MM-DD');
+                if (!FinanceMgr.singleton.isDayOff(ct)) {
+                    let accum_net = 0;
+                    let unit_net = 0;
+
+                    if (map.hasOwnProperty(ct)) {
+                        accum_net = map[ct].accum_net;
+                        unit_net = map[ct].unit_net;
+
+                        last_accum_net = accum_net;
+                        last_unit_net = unit_net;
+                    }
+                    else {
+                        accum_net = last_accum_net;
+                        unit_net = last_unit_net;
+                    }
+
+                    lst.push({
+                        code: code,
+                        timed: ct,
+                        accum_net: accum_net,
+                        unit_net: unit_net
+                    });
+                }
+
+                bt.add(1, 'days')
+            }
+
+            for (let ii = 2; ii <= 50; ++ii) {
+                this.procMA(lst, ii);
+            }
+
+            await saveJRJFundMa(this.cfg.maindb, ti, lst);
+            // await this.saveJRJFundFormat(ti, lst);
         }
     }
 
@@ -101,16 +156,15 @@ class TaskJRJFundMA_Init extends Task {
         MysqlMgr.singleton.start().then(async () => {
             FinanceMgr.singleton.init(this.cfg.maindb);
 
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_0', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_1', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_2', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_3', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_4', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_5', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_6', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_7', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_8', 'ma', 2, 50);
-            await FinanceMgr.singleton.createFundFactor('jrjfundma_9', 'ma', 2, 50);
+            await FinanceMgr.singleton.loadDayOff();
+
+            for (let ii = 0; ii < 10; ++ii) {
+                await FinanceMgr.singleton.createFundFactor('jrjfundma_' + ii, 'ma', 2, 50);
+                let lst = await this.loadJRJCodeList(ii);
+                for (let jj = 0; jj < lst.length; ++jj) {
+                    await this.procFormat(ii, lst[jj].code);
+                }
+            }
 
             this.onEnd();
         });
