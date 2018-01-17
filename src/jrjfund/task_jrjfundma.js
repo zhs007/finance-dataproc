@@ -94,6 +94,7 @@ class TaskJRJFundMA extends Task {
 
         let str = util.format("select * from jrjfundformat_%d where code = '%s' and timed >= '%s' and timed <= '%s' order by timed asc;", ti, code, mst, met);
         let [rows, fields] = await conn.query(str);
+        // log('info', 'select ' + rows.length);
         if (rows.length > 0) {
             let map = {};
             let bt = moment(rows[0].timed);
@@ -148,6 +149,7 @@ class TaskJRJFundMA extends Task {
                 }
             }
 
+            // log('info', 'saveJRJFundMa ' + code);
             await saveJRJFundMa(this.cfg.maindb, ti, lst1);
             // await this.saveJRJFundFormat(ti, lst);
         }
@@ -170,10 +172,14 @@ class TaskJRJFundMA extends Task {
             let st = FinanceMgr.singleton.subDays_DayOff(et, this.cfg.daynums + 60);
 
             for (let ii = 0; ii < 10; ++ii) {
+                let per = ii / 10;
                 // await FinanceMgr.singleton.createFundFactor('jrjfundma_' + ii, 'ma', 2, 50);
                 let lst = await this.loadJRJCodeList(ii);
                 for (let jj = 0; jj < lst.length; ++jj) {
                     await this.procFormat(ii, lst[jj].code, st, bt, et);
+
+                    per += (1 / 10 / lst.length);
+                    log('info', 'per ' + per);
                 }
             }
 

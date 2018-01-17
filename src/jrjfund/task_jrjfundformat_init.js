@@ -9,8 +9,6 @@ const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
 const { saveJRJFundFormat } = require('./jrjfundformat');
 
-// const SQL_BATCH_NUMS = 2048;
-
 class TaskJRJFundFormat_Init extends Task {
     constructor(taskfactory, cfg) {
         super(taskfactory, TASK_NAMEID_JRJFUND_FORMAT_INIT, cfg);
@@ -23,58 +21,6 @@ class TaskJRJFundFormat_Init extends Task {
         let [rows, fields] = await conn.query(str);
         return rows;
     }
-
-    // async saveJRJFundFormat(ti, lst) {
-    //     let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
-    //
-    //     let fullsql = '';
-    //     let sqlnums = 0;
-    //     for (let ii = 0; ii < lst.length; ++ii) {
-    //         let cf = lst[ii];
-    //         let str0 = '';
-    //         let str1 = '';
-    //
-    //         let i = 0;
-    //         for (let key in cf) {
-    //             if (i != 0) {
-    //                 str0 += ', ';
-    //                 str1 += ', ';
-    //             }
-    //
-    //             str0 += '`' + key + '`';
-    //             str1 += "'" + cf[key] + "'";
-    //
-    //             ++i;
-    //         }
-    //
-    //         let sql = util.format("insert into jrjfundformat_%d(%s) values(%s);", ti, str0, str1);
-    //         fullsql += sql;
-    //         ++sqlnums;
-    //
-    //         if (sqlnums >= SQL_BATCH_NUMS) {
-    //             try{
-    //                 await conn.query(fullsql);
-    //             }
-    //             catch(err) {
-    //                 log('error', 'mysql err: ' + err);
-    //                 log('error', 'mysql sql: ' + fullsql);
-    //             }
-    //
-    //             fullsql = '';
-    //             sqlnums = 0;
-    //         }
-    //     }
-    //
-    //     if (sqlnums > 0) {
-    //         try{
-    //             await conn.query(fullsql);
-    //         }
-    //         catch(err) {
-    //             log('error', 'mysql err: ' + err);
-    //             log('error', 'mysql sql: ' + fullsql);
-    //         }
-    //     }
-    // }
 
     async procFormat(ti, code) {
         let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
@@ -141,10 +87,14 @@ class TaskJRJFundFormat_Init extends Task {
             await FinanceMgr.singleton.loadDayOff();
 
             for (let ii = 0; ii < 10; ++ii) {
+                let per = ii / 10;
                 await FinanceMgr.singleton.createFundFormat('jrjfundformat_' + ii);
                 let lst = await this.loadJRJCodeList(ii);
                 for (let jj = 0; jj < lst.length; ++jj) {
                     await this.procFormat(ii, lst[jj].fundcode);
+
+                    per += (1 / 10 / lst.length);
+                    log('info', 'per ' + per);
                 }
             }
 

@@ -94,10 +94,14 @@ class TaskJRJFundFormat extends Task {
             let bt = FinanceMgr.singleton.subDays_DayOff(et, this.cfg.daynums);
 
             for (let ii = 0; ii < 10; ++ii) {
+                let per = ii / 10;
                 // await FinanceMgr.singleton.createFundFormat('jrjfundformat_' + ii);
                 let lst = await this.loadJRJCodeList(ii);
                 for (let jj = 0; jj < lst.length; ++jj) {
                     await this.procFormat(ii, lst[jj].fundcode, bt, et);
+
+                    per += (1 / 10 / lst.length)
+                    log('info', 'per ' + per);
                 }
             }
 

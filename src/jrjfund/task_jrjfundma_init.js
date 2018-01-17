@@ -159,10 +159,14 @@ class TaskJRJFundMA_Init extends Task {
             await FinanceMgr.singleton.loadDayOff();
 
             for (let ii = 0; ii < 10; ++ii) {
+                let per = ii / 10;
                 await FinanceMgr.singleton.createFundFactor('jrjfundma_' + ii, 'ma', 2, 50);
                 let lst = await this.loadJRJCodeList(ii);
                 for (let jj = 0; jj < lst.length; ++jj) {
                     await this.procFormat(ii, lst[jj].code);
+
+                    per += (1 / 10 / lst.length);
+                    log('info', 'per ' + per);
                 }
             }
 

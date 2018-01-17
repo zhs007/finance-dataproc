@@ -5,7 +5,7 @@ const moment = require('moment');
 const { Task, log } = require('jarvis-task');
 const { MysqlMgr } = require('../mysqlmgr');
 
-const SQL_BATCH_NUMS = 1024;
+const SQL_BATCH_NUMS = 512;
 
 async function delJRJFundMa(dbid, ti, lst) {
     let conn = MysqlMgr.singleton.getMysqlConn(dbid);
