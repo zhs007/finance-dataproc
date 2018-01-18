@@ -2,7 +2,7 @@
 
 const util = require('util');
 const moment = require('moment');
-const { Task, log } = require('jarvis-task');
+const { Task, log, formatTimeMs, formatPer } = require('jarvis-task');
 const { taskFactory } = require('../taskfactory');
 const { TASK_NAMEID_JRJFUND_MA } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
@@ -179,7 +179,11 @@ class TaskJRJFundMA extends Task {
                     await this.procFormat(ii, lst[jj].code, st, bt, et);
 
                     per += (1 / 10 / lst.length);
-                    log('info', 'per ' + per);
+                    this.taskStatistics.onPer(per * 100);
+                    let strper = formatPer(this.taskStatistics.per);
+                    let strlastms = formatTimeMs(this.taskStatistics.lasttimems);
+                    let strcurms = formatTimeMs(new Date().getTime() - this.taskStatistics.starttimems);
+                    log('info', 'per ' + strper + ' curms ' + strcurms + ' lasttime ' + strlastms);
                 }
             }
 
