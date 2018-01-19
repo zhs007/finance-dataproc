@@ -51,7 +51,7 @@ class TaskJRJFundNOPR extends Task {
                 lstFund.push(rows[ii]);
                 mapFund2[rows[ii].code] = {
                     code: rows[ii].code,
-                    timed: rows[ii].timed
+                    timed: ymd
                 };
             }
         }
