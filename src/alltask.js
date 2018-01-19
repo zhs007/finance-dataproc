@@ -7,3 +7,5 @@ require('./jrjfund/task_jrjfundma_init');
 require('./jrjfund/task_jrjfundma');
 require('./jrjfund/task_jrjfundnop_init');
 require('./jrjfund/task_jrjfundnop');
+require('./jrjfund/task_jrjfundnopr_init');
+require('./jrjfund/task_jrjfundnopr');

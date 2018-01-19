@@ -12,3 +12,6 @@ exports.TASK_NAMEID_JRJFUND_MA          = 'jrjfund_ma';
 
 exports.TASK_NAMEID_JRJFUND_NOP_INIT    = 'jrjfund_nop_init';
 exports.TASK_NAMEID_JRJFUND_NOP         = 'jrjfund_nop';
+
+exports.TASK_NAMEID_JRJFUND_NOPR_INIT   = 'jrjfund_nopr_init';
+exports.TASK_NAMEID_JRJFUND_NOPR        = 'jrjfund_nopr';
