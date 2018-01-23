@@ -1,0 +1,38 @@
+{
+  "name": "taskdeamon",
+  "tick": 1000,
+  "lsttask": [
+    {
+      "jarvis_shell": {
+        "filename": "./shell_initlist.js"
+      },
+      "tasknameid": "jarvis_shell",
+      "tasktype": "dayclock",
+      "clock": "10:10:00"
+    },
+    {
+      "jarvis_shell": {
+        "filename": "./shell_sinainitlist.js"
+      },
+      "tasknameid": "jarvis_shell",
+      "tasktype": "dayclock",
+      "clock": "10:20:00"
+    },
+    {
+      "jarvis_shell": {
+        "filename": "./shell_sinastocktoday.js"
+      },
+      "tasknameid": "jarvis_shell",
+      "tasktype": "dayclock",
+      "clock": "15:30:00"
+    },
+    {
+      "jarvis_shell": {
+        "filename": "./shell_jrjfundtoday.js"
+      },
+      "tasknameid": "jarvis_shell",
+      "tasktype": "dayclock",
+      "clock": "21:00:00"
+    }
+  ]
+}
