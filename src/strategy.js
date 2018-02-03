@@ -266,6 +266,22 @@ class Strategy {
 
     onEnd_Trader(trader, curdata, lstHistory) {
     }
+
+    async saveDB(conn) {
+        let str = util.format("insert into strategyinfo(typename, params, starttime) values('%s', '%s', '%s')",
+            this.typename, JSON.stringify(this.params), this.starttime);
+        let [rows, fields] = await conn.query(str);
+        let strategyid = rows.insertId;
+        for (let ii = 0; ii < this.lstTrader.length; ++ii) {
+            let trader = this.lstTrader[ii];
+            let str1 = util.format("insert into strategytrader(strategyid, buytime, selltime, buyprice, sellprice, " +
+                "buyvolume, sellvolume, typecode, code, islong, issuccess, winper) values(%d, '%s', '%s', %d, %d, " +
+                "%d, %d, '%s', '%s', %s, %s, %d)", strategyid, trader.buytime, trader.selltime, trader.buyprice, trader.sellprice,
+                trader.buyvolume, trader.sellvolume, this.typecode, this.code, trader.islong ? 'true' : 'false', trader.issuccess ? 'true' : 'false', trader.winper);
+
+            let [rows, fields] = await conn.query(str1);
+        }
+    }
 };
 
 exports.Strategy = Strategy;

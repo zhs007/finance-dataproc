@@ -40,6 +40,8 @@ class TaskStrategyFund extends Task {
             let lstData = await this.loadData(this.cfg.code, this.cfg.begintime, this.cfg.endtime);
             strategy.runSimulation(lstData);
 
+            let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
+            await strategy.saveDB(conn);
             log('info', JSON.stringify(strategy.result));
 
             this.onEnd();

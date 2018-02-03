@@ -4,7 +4,7 @@ const util = require('util');
 const moment = require('moment');
 const { Task, log } = require('jarvis-task');
 const { Strategy, Trader } = require('../strategy');
-const { STRATEGY_TYPECODE_FUNDCN, STRATEGY_TYPENAME_FUNDMA } = require('../strategydef');
+const { STRATEGY_TYPENAME_FUNDMA } = require('../strategydef');
 
 // 思路
 //  1. 2根均线，maval0短
@@ -46,7 +46,7 @@ class StrategyMA extends Strategy {
             if (this.lastmaoff != 0) {
                 if (this.lastmaoff != curdata.curmaoff) {
                     if (curdata.curmaoff >= 0) {
-                        this.buy(curdata.unit_net, this.countPosition(1, curdata.unit_net), curdata.timed);
+                        this.buy(curdata.unit_net, this.countPosition(1, curdata.unit_net), moment(curdata.timed).format('YYYY-MM-DD'));
                     }
                 }
             }
@@ -56,13 +56,13 @@ class StrategyMA extends Strategy {
     onTick_Trader(trader, curdata, lstHistory) {
         if (curdata.hasOwnProperty(this.params.maval0) && curdata.hasOwnProperty(this.params.maval1) && curdata.hasOwnProperty('curmaoff')) {
             if (trader.islong && this.lastmaoff != curdata.curmaoff && this.lastmaoff != 0 && curdata.curmaoff <= 0) {
-                this.sellTrader(trader, curdata.unit_net, trader.curvolume, curdata.timed);
+                this.sellTrader(trader, curdata.unit_net, trader.curvolume, moment(curdata.timed).format('YYYY-MM-DD'));
             }
         }
     }
 
     onEnd_Trader(trader, curdata, lstHistory) {
-        this.sellTrader(trader, curdata.unit_net, trader.curvolume, curdata.timed);
+        this.sellTrader(trader, curdata.unit_net, trader.curvolume, moment(curdata.timed).format('YYYY-MM-DD'));
     }
 
     onTick_Net(curdata, lstHistory) {
