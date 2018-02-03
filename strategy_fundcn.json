@@ -1,0 +1,29 @@
+{
+  "name": "strategy_fundcn",
+  "tasknameid": "jarvis_chain",
+  "jarvis_chain": {
+    "strategy_fundcn": {
+      "mysqlcfg": {
+        "dfdb": {
+          "host": "114.55.252.31",
+          "user": "zhs007",
+          "password": "xfan007@1231231",
+          "database": "hfdb",
+          "port": 5758,
+          "multipleStatements": true
+        }
+      },
+      "maindb": "dfdb",
+      "code": "110022",
+      "begintime": "2010-04-02",
+      "endtime": "2018-02-02",
+      "typecode": "fundcn",
+      "money": 1000000000,
+      "maval0": "ma2",
+      "maval1": "ma4"
+    },
+    "taskchain": [
+      "strategy_fundcn"
+    ]
+  }
+}
