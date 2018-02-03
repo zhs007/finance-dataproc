@@ -45,9 +45,13 @@ class StrategyMA extends Strategy {
         if (curdata[this.params.maval0] != null && curdata[this.params.maval1] != null && curdata.hasOwnProperty('curmaoff')) {
             if (this.lastmaoff != 0) {
                 if (this.lastmaoff != curdata.curmaoff) {
-                    if (curdata.curmaoff >= 0) {
+                    if (curdata.curmaoff >= 0 && this.lastmaoff < 0) {
                         this.buy(curdata.unit_net, this.countPosition(1, curdata.unit_net), moment(curdata.timed).format('YYYY-MM-DD'));
                     }
+                }
+
+                if (curdata.curmaoff != 0) {
+                    this.lastmaoff = curdata.curmaoff;
                 }
             }
         }
@@ -55,7 +59,7 @@ class StrategyMA extends Strategy {
 
     onTick_Trader(trader, curdata, lstHistory) {
         if (curdata.hasOwnProperty(this.params.maval0) && curdata.hasOwnProperty(this.params.maval1) && curdata.hasOwnProperty('curmaoff')) {
-            if (trader.islong && this.lastmaoff != curdata.curmaoff && this.lastmaoff != 0 && curdata.curmaoff <= 0 && trader.buyprice != curdata.unit_net) {
+            if (trader.islong && curdata.curmaoff < 0 && this.lastmaoff != 0 && trader.buyprice != curdata.unit_net) {
                 this.sellTrader(trader, curdata.unit_net, trader.curvolume, moment(curdata.timed).format('YYYY-MM-DD'));
             }
         }
