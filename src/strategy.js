@@ -167,6 +167,10 @@ class Strategy {
     }
 
     buy(curprice, curvolume, curtime) {
+        if (curvolume <= 0) {
+            return false;
+        }
+
         let cm = curprice * curvolume;
         if (cm > this.lastMoney) {
             return false;
