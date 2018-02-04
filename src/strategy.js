@@ -78,13 +78,13 @@ class Trader {
 }
 
 class Strategy {
-    constructor(typename, params, starttime) {
+    constructor(typename, params) {
         this.typecode = params.typecode;   // 交易大类
         this.code = params.code;           // 交易大类下的编号
 
         this.typename = typename;
         this.params = params;
-        this.starttime = starttime;
+        this.starttime = moment().format('YYYY-MM-DD HH:mm:ss');
 
         this.poolMoney = params.money;
         this.lastMoney = params.money;
@@ -247,7 +247,7 @@ class Strategy {
 
         this.result.maxDrawdown = 0;
         this.result.annualizedReturns = ((this.result.winPer - 1) / this.result.days * 250).toFixed(4);
-        this.result.benchmarkReturns = 0;
+        this.result.benchmarkReturns = (this.countBenchmarkReturns()).toFixed(4);
         this.result.alpha = 0;
         this.result.beta = 0;
         this.result.sharpeRatio = 0;
@@ -269,6 +269,10 @@ class Strategy {
     }
 
     onEnd_Trader(trader, curdata, lstHistory) {
+    }
+
+    countBenchmarkReturns() {
+        return 0;
     }
 
     async saveDB(conn) {

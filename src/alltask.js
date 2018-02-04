@@ -9,4 +9,6 @@ require('./jrjfund/task_jrjfundnop_init');
 require('./jrjfund/task_jrjfundnop');
 require('./jrjfund/task_jrjfundnopr_init');
 require('./jrjfund/task_jrjfundnopr');
+require('./jrjfund/task_jrjfundrsi_init');
+require('./jrjfund/task_jrjfundrsi');
 require('./fundtrader/task_fundstrategy');

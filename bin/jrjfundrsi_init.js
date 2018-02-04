@@ -7,12 +7,11 @@ const process = require('process');
 const { startTask, initDailyRotateFileLog, log } = require('jarvis-task');
 const { taskFactory } = require('../src/taskfactory');
 require('../src/alltask');
-require('../src/allstrategy');
 
-initDailyRotateFileLog(util.format('./log/strategy_fundcn_%d.log', moment().format('x')), 'info');
+initDailyRotateFileLog(util.format('./log/jrjfund_rsi_init_%d.log', moment().format('x')), 'info');
 // log('info', 'haha');
 
-const cfg = JSON.parse(fs.readFileSync('./strategy_fundcn.json').toString());
+const cfg = JSON.parse(fs.readFileSync('./jrjfund_rsi_init.json').toString());
 
 startTask(cfg, taskFactory, () => {
     process.exit(0);

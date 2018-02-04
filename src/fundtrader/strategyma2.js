@@ -4,7 +4,6 @@ const util = require('util');
 const moment = require('moment');
 const { Task, log } = require('jarvis-task');
 const { Strategy, Trader } = require('../strategy');
-const { StrategyFactory } = require('../strategyfactory');
 const { STRATEGY_TYPENAME_FUNDMA } = require('../strategydef');
 
 // 思路
@@ -77,15 +76,6 @@ class StrategyMA extends Strategy {
             net: this.lastMoney + this.curVolume * curdata.unit_net,
         });
     }
-
-    countBenchmarkReturns() {
-        let rv = this.lstHistory[this.lstHistory.length - 1].unit_net / this.lstHistory[0].unit_net;
-        return ((rv - 1) / this.lstHistory.length * 250);
-    }
 };
-
-StrategyFactory.singleton.regStrategy(STRATEGY_TYPENAME_FUNDMA, (params) => {
-    return new StrategyMA(params);
-});
 
 exports.StrategyMA = StrategyMA;

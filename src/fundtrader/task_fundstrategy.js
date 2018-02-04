@@ -7,7 +7,8 @@ const { taskFactory } = require('../taskfactory');
 const { TASK_NAMEID_STRATEGY_FUNDCN } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
-const { StrategyMA } = require('./strategyma');
+const { StrategyFactory } = require('../strategyfactory');
+// const { StrategyMA } = require('./strategyma');
 
 class TaskStrategyFund extends Task {
     constructor(taskfactory, cfg) {
@@ -36,7 +37,8 @@ class TaskStrategyFund extends Task {
         MysqlMgr.singleton.start().then(async () => {
             FinanceMgr.singleton.init(this.cfg.maindb);
 
-            let strategy = new StrategyMA(this.cfg, moment().format('YYYY-MM-DD HH:mm:ss'));
+            let strategy = StrategyFactory.singleton.newStrategy(this.cfg.typename, this.cfg);
+
             let lstData = await this.loadData(this.cfg.code, this.cfg.begintime, this.cfg.endtime);
             strategy.runSimulation(lstData);
 

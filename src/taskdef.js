@@ -16,4 +16,7 @@ exports.TASK_NAMEID_JRJFUND_NOP         = 'jrjfund_nop';
 exports.TASK_NAMEID_JRJFUND_NOPR_INIT   = 'jrjfund_nopr_init';
 exports.TASK_NAMEID_JRJFUND_NOPR        = 'jrjfund_nopr';
 
+exports.TASK_NAMEID_JRJFUND_RSI_INIT    = 'jrjfund_rsi_init';
+exports.TASK_NAMEID_JRJFUND_RSI         = 'jrjfund_rsi';
+
 exports.TASK_NAMEID_STRATEGY_FUNDCN     = 'strategy_fundcn';
