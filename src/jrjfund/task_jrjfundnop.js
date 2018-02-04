@@ -7,7 +7,7 @@ const { taskFactory } = require('../taskfactory');
 const { TASK_NAMEID_JRJFUND_NOP } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
-const { saveJRJFundNop } = require('./jrjfundnop');
+// const { saveJRJFundNop } = require('./jrjfundnop');
 
 class TaskJRJFundNOP extends Task {
     constructor(taskfactory, cfg) {
@@ -91,8 +91,9 @@ class TaskJRJFundNOP extends Task {
                 }
             }
 
+            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundnop_' + ti, lst1, 512);
             // log('info', 'saveJRJFundMa ' + code);
-            await saveJRJFundNop(this.cfg.maindb, ti, lst1);
+            // await saveJRJFundNop(this.cfg.maindb, ti, lst1);
             // await this.saveJRJFundFormat(ti, lst);
         }
     }

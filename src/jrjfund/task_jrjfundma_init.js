@@ -7,7 +7,7 @@ const { taskFactory } = require('../taskfactory');
 const { TASK_NAMEID_JRJFUND_MA_INIT } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
-const { saveJRJFundMa } = require('./jrjfundma');
+// const { saveJRJFundMa } = require('./jrjfundma');
 
 // const SQL_BATCH_NUMS = 1024;
 
@@ -141,7 +141,8 @@ class TaskJRJFundMA_Init extends Task {
                 this.procMA(lst, ii);
             }
 
-            await saveJRJFundMa(this.cfg.maindb, ti, lst);
+            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundma_' + ti, lst, 512);
+            // await saveJRJFundMa(this.cfg.maindb, ti, lst);
             // await this.saveJRJFundFormat(ti, lst);
         }
     }

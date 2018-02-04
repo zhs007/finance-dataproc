@@ -7,7 +7,7 @@ const { taskFactory } = require('../taskfactory');
 const { TASK_NAMEID_JRJFUND_FORMAT } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
-const { saveJRJFundFormat } = require('./jrjfundformat');
+// const { saveJRJFundFormat } = require('./jrjfundformat');
 
 class TaskJRJFundFormat extends Task {
     constructor(taskfactory, cfg) {
@@ -74,7 +74,8 @@ class TaskJRJFundFormat extends Task {
                 bt.add(1, 'days')
             }
 
-            await saveJRJFundFormat(this.cfg.maindb, ti, lst);
+            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundformat_' + ti, lst, 512);
+            // await saveJRJFundFormat(this.cfg.maindb, ti, lst);
         }
     }
 

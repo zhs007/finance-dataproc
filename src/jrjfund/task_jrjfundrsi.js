@@ -4,16 +4,16 @@ const util = require('util');
 const moment = require('moment');
 const { Task, log, formatTimeMs, formatPer } = require('jarvis-task');
 const { taskFactory } = require('../taskfactory');
-const { TASK_NAMEID_JRJFUND_MA } = require('../taskdef');
+const { TASK_NAMEID_JRJFUND_RSI } = require('../taskdef');
 const { FinanceMgr } = require('../financemgr');
 const { MysqlMgr } = require('../mysqlmgr');
-const { saveJRJFundMa } = require('./jrjfundma');
+// const { saveJRJFundMa } = require('./jrjfundma');
 
 // const SQL_BATCH_NUMS = 1024;
 
-class TaskJRJFundMA extends Task {
+class TaskJRJFundRSI extends Task {
     constructor(taskfactory, cfg) {
-        super(taskfactory, TASK_NAMEID_JRJFUND_MA, cfg);
+        super(taskfactory, TASK_NAMEID_JRJFUND_RSI, cfg);
     }
 
     async loadJRJCodeList(ti) {
@@ -24,68 +24,30 @@ class TaskJRJFundMA extends Task {
         return rows;
     }
 
-    // async saveJRJFundFormat(ti, lst) {
-    //     let conn = MysqlMgr.singleton.getMysqlConn(this.cfg.maindb);
-    //
-    //     let fullsql = '';
-    //     let sqlnums = 0;
-    //     for (let ii = 0; ii < lst.length; ++ii) {
-    //         let cf = lst[ii];
-    //         let str0 = '';
-    //         let str1 = '';
-    //
-    //         let i = 0;
-    //         for (let key in cf) {
-    //             if (key != 'accum_net' && key != 'unit_net') {
-    //                 if (i != 0) {
-    //                     str0 += ', ';
-    //                     str1 += ', ';
-    //                 }
-    //
-    //                 str0 += '`' + key + '`';
-    //                 str1 += "'" + cf[key] + "'";
-    //
-    //                 ++i;
-    //             }
-    //         }
-    //
-    //         let sql = util.format("insert into jrjfundma_%d(%s) values(%s);", ti, str0, str1);
-    //         fullsql += sql;
-    //         ++sqlnums;
-    //
-    //         if (sqlnums >= SQL_BATCH_NUMS) {
-    //             try{
-    //                 await conn.query(fullsql);
-    //             }
-    //             catch(err) {
-    //                 log('error', 'mysql err: ' + err);
-    //                 log('error', 'mysql sql: ' + fullsql);
-    //             }
-    //
-    //             fullsql = '';
-    //             sqlnums = 0;
-    //         }
-    //     }
-    //
-    //     if (sqlnums > 0) {
-    //         try{
-    //             await conn.query(fullsql);
-    //         }
-    //         catch(err) {
-    //             log('error', 'mysql err: ' + err);
-    //             log('error', 'mysql sql: ' + fullsql);
-    //         }
-    //     }
-    // }
-
-    procMA(lst, mai) {
+    procRSI(lst, mai) {
         for (let ii = mai - 1; ii < lst.length; ++ii) {
-            let ta = 0;
-            for (let jj = 0; jj < mai; ++jj) {
-                ta += lst[ii - jj].accum_net;
+            let ap = 0;
+            let as = 0;
+
+            // let bi = ii - (mai - 1);
+            // let bv = lst[bi].accum_net;
+
+            for (let jj = 0; jj < mai - 1; ++jj) {
+                // let ci = ii - (mai - 1 - jj);
+
+                let ca = lst[ii - jj - 1].accum_net - lst[ii - jj].accum_net;
+                if (ca < 0) {
+                    as += Math.abs(ca);
+                }
+                else {
+                    ap += ca;
+                }
             }
 
-            lst[ii]['ma' + mai] = Math.floor(ta / mai);
+            ap /= (mai - 1);
+            as /= (mai - 1);
+
+            lst[ii]['rsi' + mai] = Math.floor(ap / (ap + as) * 10000);
         }
     }
 
@@ -138,8 +100,8 @@ class TaskJRJFundMA extends Task {
                 bt.add(1, 'days')
             }
 
-            for (let ii = 2; ii <= 50; ++ii) {
-                this.procMA(lst, ii);
+            for (let ii = 3; ii <= 50; ++ii) {
+                this.procRSI(lst, ii);
             }
 
             let lst1 = [];
@@ -149,8 +111,9 @@ class TaskJRJFundMA extends Task {
                 }
             }
 
+            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundrsi_' + ti, lst1, 512);
             // log('info', 'saveJRJFundMa ' + code);
-            await saveJRJFundMa(this.cfg.maindb, ti, lst1);
+            // await saveJRJFundMa(this.cfg.maindb, ti, lst1);
             // await this.saveJRJFundFormat(ti, lst);
         }
     }
@@ -192,8 +155,8 @@ class TaskJRJFundMA extends Task {
     }
 };
 
-taskFactory.regTask(TASK_NAMEID_JRJFUND_MA, (taskfactory, cfg) => {
-    return new TaskJRJFundMA(taskfactory, cfg);
+taskFactory.regTask(TASK_NAMEID_JRJFUND_RSI, (taskfactory, cfg) => {
+    return new TaskJRJFundRSI(taskfactory, cfg);
 });
 
-exports.TaskJRJFundMA = TaskJRJFundMA;
+exports.TaskJRJFundRSI = TaskJRJFundRSI;

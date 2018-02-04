@@ -12,6 +12,9 @@ if (shell.which('node')) {
 
     log('info', 'node ./bin/jrjfundnopr.js');
     shell.exec("node ./bin/jrjfundnopr.js");
+
+    log('info', 'node ./bin/jrjfundrsi.js');
+    shell.exec("node ./bin/jrjfundrsi.js");
 }
 
 log('info', 'exec today end.');
