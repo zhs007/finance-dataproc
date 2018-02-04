@@ -10,6 +10,9 @@ exports.TASK_NAMEID_JRJFUND_FORMAT      = 'jrjfund_format';
 exports.TASK_NAMEID_JRJFUND_MA_INIT     = 'jrjfund_ma_init';
 exports.TASK_NAMEID_JRJFUND_MA          = 'jrjfund_ma';
 
+exports.TASK_NAMEID_JRJFUND_EMA_INIT    = 'jrjfund_ema_init';
+exports.TASK_NAMEID_JRJFUND_EMA         = 'jrjfund_ema';
+
 exports.TASK_NAMEID_JRJFUND_NOP_INIT    = 'jrjfund_nop_init';
 exports.TASK_NAMEID_JRJFUND_NOP         = 'jrjfund_nop';
 

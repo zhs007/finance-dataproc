@@ -15,6 +15,9 @@ if (shell.which('node')) {
 
     log('info', 'node ./bin/jrjfundrsi.js');
     shell.exec("node ./bin/jrjfundrsi.js");
+
+    // log('info', 'node ./bin/jrjfundema.js');
+    // shell.exec("node ./bin/jrjfundema.js");
 }
 
 log('info', 'exec today end.');
