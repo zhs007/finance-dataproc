@@ -91,7 +91,7 @@ class TaskJRJFundNOP extends Task {
                 }
             }
 
-            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundnop_' + ti, lst1, 512);
+            await FinanceMgr.singleton.saveJRJFundFactor2('jrjfundnop_' + ti, lst1, 512);
             // log('info', 'saveJRJFundMa ' + code);
             // await saveJRJFundNop(this.cfg.maindb, ti, lst1);
             // await this.saveJRJFundFormat(ti, lst);

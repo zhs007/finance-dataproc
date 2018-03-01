@@ -141,7 +141,7 @@ class TaskJRJFundMA_Init extends Task {
                 this.procMA(lst, ii);
             }
 
-            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundma_' + ti, lst, 512);
+            await FinanceMgr.singleton.saveJRJFundFactor2('jrjfundma_' + ti, lst, 512);
             // await saveJRJFundMa(this.cfg.maindb, ti, lst);
             // await this.saveJRJFundFormat(ti, lst);
         }

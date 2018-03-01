@@ -103,7 +103,7 @@ class TaskJRJFundRSI_Init extends Task {
                 this.procRSI(lst, ii);
             }
 
-            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundrsi_' + ti, lst, 512);
+            await FinanceMgr.singleton.saveJRJFundFactor2('jrjfundrsi_' + ti, lst, 512);
         }
     }
 

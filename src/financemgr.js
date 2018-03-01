@@ -268,6 +268,62 @@ class FinanceMgr {
             }
         }
     }
+
+    async saveJRJFundFactor2(tablename, lst, batchnums) {
+        this.delJRJFundFactor(tablename, lst, batchnums);
+
+        let conn = MysqlMgr.singleton.getMysqlConn(this.mysqlid);
+
+        let fullsql = '';
+        let sqlnums = 0;
+        for (let ii = 0; ii < lst.length; ++ii) {
+            let cf = lst[ii];
+            let str0 = '';
+            let str1 = '';
+
+            let i = 0;
+            for (let key in cf) {
+                if (key != 'accum_net' && key != 'unit_net') {
+                    if (i != 0) {
+                        str0 += ', ';
+                        str1 += ', ';
+                    }
+
+                    str0 += '`' + key + '`';
+                    str1 += "'" + cf[key] + "'";
+
+                    ++i;
+                }
+            }
+
+            let sql = util.format("insert into %s(%s) values(%s);", tablename, str0, str1);
+            fullsql += sql;
+            ++sqlnums;
+
+            if (sqlnums >= batchnums) {
+                try{
+                    await conn.query(fullsql);
+                }
+                catch(err) {
+                    log('error', 'mysql err: ' + err);
+                    log('error', 'mysql sql: ' + fullsql);
+                }
+
+                fullsql = '';
+                sqlnums = 0;
+            }
+        }
+
+        if (sqlnums > 0) {
+            try{
+                await conn.query(fullsql);
+            }
+            catch(err) {
+                log('error', 'mysql err: ' + err);
+                log('error', 'mysql sql: ' + fullsql);
+            }
+        }
+    }
 };
 
 FinanceMgr.singleton = new FinanceMgr();

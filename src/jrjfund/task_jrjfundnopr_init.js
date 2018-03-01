@@ -97,7 +97,7 @@ class TaskJRJFundNOPR_Init extends Task {
         }
 
         for (let ti = 0; ti < 10; ++ti) {
-            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundnopr_' + ti, clst[ti], 512);
+            await FinanceMgr.singleton.saveJRJFundFactor2('jrjfundnopr_' + ti, clst[ti], 512);
             // await saveJRJFundNopr(this.cfg.maindb, ti, clst[ti]);
         }
     }

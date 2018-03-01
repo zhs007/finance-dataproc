@@ -99,7 +99,7 @@ class TaskJRJFundEMA extends Task {
                 }
             }
 
-            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundema_' + ti, lst1, 512);
+            await FinanceMgr.singleton.saveJRJFundFactor2('jrjfundema_' + ti, lst1, 512);
             // log('info', 'saveJRJFundMa ' + code);
             // await saveJRJFundMa(this.cfg.maindb, ti, lst1);
             // await this.saveJRJFundFormat(ti, lst);

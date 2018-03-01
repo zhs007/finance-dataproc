@@ -83,7 +83,7 @@ class TaskJRJFundNOP_Init extends Task {
                 this.procMA(lst, ii);
             }
 
-            await FinanceMgr.singleton.saveJRJFundFactor('jrjfundnop_' + ti, lst, 512);
+            await FinanceMgr.singleton.saveJRJFundFactor2('jrjfundnop_' + ti, lst, 512);
             // await saveJRJFundNop(this.cfg.maindb, ti, lst);
             // await this.saveJRJFundFormat(ti, lst);
         }
