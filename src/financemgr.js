@@ -227,7 +227,7 @@ class FinanceMgr {
 
             let i = 0;
             for (let key in cf) {
-                if (key != 'accum_net' && key != 'unit_net') {
+                // if (key != 'accum_net' && key != 'unit_net') {
                     if (i != 0) {
                         str0 += ', ';
                         str1 += ', ';
@@ -237,7 +237,7 @@ class FinanceMgr {
                     str1 += "'" + cf[key] + "'";
 
                     ++i;
-                }
+                // }
             }
 
             let sql = util.format("insert into %s(%s) values(%s);", tablename, str0, str1);
